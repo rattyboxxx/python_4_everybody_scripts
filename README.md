@@ -1,4 +1,4 @@
-# python_for_everyone
-Scripts for Python For Everyone Specialization - Coursera
+# Python For Everybody - Full scripts for Coding Exercises
+Scripts for [Python For Everybody Specialization - Coursera](https://www.coursera.org/specializations/python)
 
-Use it at your own risk
+Use it at your own risk.
