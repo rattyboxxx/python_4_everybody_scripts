@@ -1,17 +1,8 @@
-import urllib.request, urllib.parse, urllib.error
-import json
-import ssl
+import urllib.request, urllib.parse
+import json, ssl
 
-api_key = False
-# If you have a Google Places API key, enter it here
-# api_key = 'AIzaSy___IDByT70'
-# https://developers.google.com/maps/documentation/geocoding/intro
-
-if api_key is False:
-    api_key = 42
-    serviceurl = 'http://py4e-data.dr-chuck.net/json?'
-else :
-    serviceurl = 'https://maps.googleapis.com/maps/api/geocode/json?'
+# Heavily rate limited proxy of https://www.geoapify.com/ api
+serviceurl = 'https://py4e-data.dr-chuck.net/opengeo?'
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
@@ -22,23 +13,33 @@ while True:
     address = input('Enter location: ')
     if len(address) < 1: break
 
+    address = address.strip()
     parms = dict()
-    parms['address'] = address
-    if api_key is not False: parms['key'] = api_key
+    parms['q'] = address
+
     url = serviceurl + urllib.parse.urlencode(parms)
 
+    # print('Retrieving', url)
     uh = urllib.request.urlopen(url, context=ctx)
     data = uh.read().decode()
+    # print('Retrieved', len(data), 'characters', data[:20].replace('\n', ' '))
 
     try:
         js = json.loads(data)
     except:
         js = None
 
-    if not js or 'status' not in js or js['status'] != 'OK':
-        print('==== Failure To Retrieve ====')
+    if not js or 'features' not in js:
+        print('==== Download error ===')
         print(data)
-        continue
+        break
 
-    print(js['results'][0]['place_id'])
+    if len(js['features']) == 0:
+        print('==== Object not found ====')
+        print(data)
+        break
+
+    # print(json.dumps(js, indent=4))
+
+    print(js["features"][0]["properties"]["plus_code"])
     break

@@ -2,7 +2,7 @@ import sqlite3
 import json
 import codecs
 
-conn = sqlite3.connect('geodata.sqlite')
+conn = sqlite3.connect('opengeo.sqlite')
 cur = conn.cursor()
 
 cur.execute('SELECT * FROM Locations')
@@ -14,13 +14,16 @@ for row in cur :
     try: js = json.loads(str(data))
     except: continue
 
-    if not('status' in js and js['status'] == 'OK') : continue
+    if len(js['features']) == 0: continue
 
-    lat = js["results"][0]["geometry"]["location"]["lat"]
-    lng = js["results"][0]["geometry"]["location"]["lng"]
-    if lat == 0 or lng == 0 : continue
-    where = js['results'][0]['formatted_address']
-    where = where.replace("'", "")
+    try:
+        lat = js['features'][0]['geometry']['coordinates'][1]
+        lng = js['features'][0]['geometry']['coordinates'][0]
+        where = js['features'][0]['properties']['display_name']
+        where = where.replace("'", "")
+    except:
+        print('-> Unexpected format. First 20 characters:', str(js)[:20])
+
     try :
         print(where, lat, lng)
 
