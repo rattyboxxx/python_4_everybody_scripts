@@ -5,3 +5,10 @@ Scripts for all coding exercises in [Python For Everybody Specialization - Cours
 MCQ answer can be found [here](https://quizlet.com/vn/521678301/prp201c-flash-cards/)
 
 ‎️‍🔥 Use it at your own risk.
+
+## How to use this repo?
+
+Simply run python file with what you need
+```
+python file_name.py
+```

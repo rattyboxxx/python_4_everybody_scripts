@@ -18,13 +18,3 @@ while True:
         sum += int(i)
     print(sum)
     break
-
-# import re
-# file = input('Enter file name: ').split("/")[3]
-# op = open(file)
-# sum = 0
-# for line in op:
-#     lst = re.findall("[0-9]+", line)
-#     for i in lst:
-#         sum += int(i)
-# print(sum)
