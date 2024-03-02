@@ -2,5 +2,4 @@ image
 00. hello
 roster_data.json
 Answer.txt
-emaildb.sqlite
-trackdb.sqlite
+*.sqlite
