@@ -1,144 +1,120 @@
-Using the Google Places API with a Database and
-Visualizing Data on Google Map
+Using the OpenStreetMap API with the database and data visualization
+on OpenStreetMap.
 
-In this project, we are using the Google geocoding API
-to clean up some user-entered geographic locations of
-university names and then placing the data on a Google
-Map.
+In this project, we use the free OpenStreetMap API (Nominatim service) to 
+convert university names entered by users into geographical locations,
+and then we place the processed data on the OpenStreetMap map.
 
-Note: Windows has difficulty in displaying UTF-8 characters
-in the console so for each command window you open, you may need
-to type the following command before running this code:
+Note: After Windows, we recommend that you use the PowerShell terminal so that it doesn't 
+problems with displaying UTF-8 characters.
 
-    chcp 65001
+The program must be installed to view and modify the database
+DB Browser for SQLite:
 
-http://stackoverflow.com/questions/388490/unicode-characters-in-windows-command-line-how
+https://sqlitebrowser.org/
 
+In the terms of using the Nominatim service there is an indication to agree to 
+a maximum of one query per second (the service is free, hence if we
+they generated a very large number of inquiries in a short time, probably quickly
+we would be blocked from accessing the API). We divide our task into two phases.
 
-You should install the SQLite browser to view and modify
-the databases from:
+In the first phase, we take our input from where.data and read it
+them line by line while reading the server's geocoded response
+Nominatim and store it in the database (opengeo.sqlite file). Before we use
+Geocoding API, we just check if we already have data for this particular one
+line, so we won't be able to restart the program
+they had to query the API a second time.
 
-http://sqlitebrowser.org/
+At any time, you can start the entire process from scratch by simply deleting
+the generated opengeo.sqlite file.
 
-The first problem to solve is that the Google geocoding
-API is rate limited to a fixed number of requests per day.
-So if you have a lot of data you might need to stop and
-restart the lookup process several times.  So we break
-the problem into two phases.
+Run the geoload.py program. This program will read input lines from the file
+where.data and check for each row to see if it's already in the database, and
+if we do not have data for the location being processed, it will trigger an API query
+geocoding to retrieve data and store it in SQLite.
 
-In the first phase we take our input data in the file
-(where.data) and read it one line at a time, and retrieve the
-geocoded response and store it in a database (geodata.sqlite).
-Before we use the geocoding API, we simply check to see if
-we already have the data for that particular line of input.
+Here is an example of a run after some are already in the database
+data:
 
-You can re-start the process at any time by removing the file
-geodata.sqlite
+python3 geoload.py 
 
-Run the geoload.py program.   This program will read the input
-lines in where.data and for each line check to see if it is already
-in the database and if we don't have the data for the location,
-call the geocoding API to retrieve the data and store it in
-the database.
+Found in database AGH University of Science and Technology
 
-As of December 2016, the Google Geocoding APIs changed dramatically.
-They moved some functionality that we use from the Geocoding API
-into the Places API.  Also all the Google Geo-related APIs require an
-API key. To complete this assignment without a Google account,
-without an API key, or from a country that blocks
-access to Google, you can use a subset of that data which is
-available at:
+Found in database Academy of Fine Arts Warsaw Poland
 
-http://py4e-data.dr-chuck.net/json
+Found in database American University in Cairo
 
-To use this, simply leave the api_key set to False in 
-geoload.py.
+Found in database Arizona State University
 
-This URL only has a subset of the data but it has no rate limit so
-it is good for testing.
+Found in database Athens Information Technology
 
-If you want to try this with the API key, follow the
-instructions at:
+Retrieving https://py4e-data.dr-chuck.net/opengeo?q=BITS+Pilani
+Retrieved 794 characters {"type":"FeatureColl
 
-https://developers.google.com/maps/documentation/geocoding/intro
+Retrieving https://py4e-data.dr-chuck.net/opengeo?q=Babcock+University
+Retrieved 760 characters {"type":"FeatureColl
 
-and put the API key in the code.
+Retrieving https://py4e-data.dr-chuck.net/opengeo?q=Banaras+Hindu+University
+Retrieved 866 characters {"type":"FeatureColl
 
-Here is a sample run after there is already some data in the
-database:
-
-Mac: python3 geoload.py
-Win: geoload.py
-
-Found in database  Northeastern University
-
-Found in database  University of Hong Kong, Illinois Institute of Technology, Bradley University
-
-Found in database  Technion
-
-Found in database  Viswakarma Institute, Pune, India
-
-Found in database  UMD
-
-Found in database  Tufts University
-
-Resolving Monash University
-Retrieving http://py4e-data.dr-chuck.net/json?key=42&address=Monash+University
-Retrieved 2063 characters {    "results" : [
-{u'status': u'OK', u'results': ... }
-
-Resolving Kokshetau Institute of Economics and Management
-Retrieving http://py4e-data.dr-chuck.net/json?key=42&address=Kokshetau+Institute+of+Economics+and+Management
-Retrieved 1749 characters {    "results" : [
-{u'status': u'OK', u'results': ... }
-
-The first five locations are already in the database and so they
-are skipped.  The program scans to the point where it finds un-retrieved
-locations and starts retrieving them.
-
-The geoload.py can be stopped at any time, and there is a counter
-that you can use to limit the number of calls to the geocoding
-API for each run.
-
-Once you have some data loaded into geodata.sqlite, you can
-visualize the data using the (geodump.py) program.  This
-program reads the database and writes tile file (where.js)
-with the location, latitude, and longitude in the form of
-executable JavaScript code.
-
-A run of the geodump.py program is as follows:
-
-Mac: python3 geodump.py
-Win: geodump.py
-
-Northeastern University, 360 Huntington Avenue, Boston, MA 02115, USA 42.3396998 -71.08975
-Bradley University, 1501 West Bradley Avenue, Peoria, IL 61625, USA 40.6963857 -89.6160811
 ...
-Technion, Viazman 87, Kesalsaba, 32000, Israel 32.7775 35.0216667
-Monash University Clayton Campus, Wellington Road, Clayton VIC 3800, Australia -37.9152113 145.134682
-Kokshetau, Kazakhstan 53.2833333 69.3833333
-...
-12 records written to where.js
-Open where.html to view the data in a browser
 
-The file (where.html) consists of HTML and JavaScript to visualize
-a Google Map.  It reads the most recent data in where.js to get
-the data to be visualized.  Here is the format of the where.js file:
+The first five locations are already in the database, and so are they
+omitted. The program processes data until it finds unsaved
+locations and starts asking the API for them.
+
+The geoload.py file can be stopped at any time, plus the code
+contains a counter (the variable 'count') that can be used to limit the number
+connections to the geocoding API in a given program startup.
+
+After the data has been loaded into opengeo.sqlite, you can visualize it with
+geodump.py. This program reads the database and writes the where.js file
+containing locations, latitudes, and longitudes in the form
+JavaScript executable. The ZIP file you downloaded already contains
+where.js generated, but you can generate it again to check
+operation of the geodump.py program.
+
+The geodump.py program is launched as follows:
+
+
+
+python3 geodump.py
+
+AGH University of Science and Technology, Czarnowiejska, Czarna Wieś, Krowodrza, Kraków,
+Lesser Poland Voivodeship, 31-126, Poland 50.065703299999996 19.918958667058632
+Academy of Fine Arts, Krakowskie Przedmieście, Northern Śródmieście,
+Śródmieście, Warsaw, Masovian Voivodeship, 00-046, Poland 52.2397515
+21.015564130658333
+...
+260 lines were written to where.js
+Open the where.html file in a web browser to view the data.
+
+
+The where.html file consists of HTML and JavaScript that are used for visualization
+OpenStreetMap maps using the OpenLayers library. The page reads
+the most recent data from the where.js file to get the data necessary for
+visualization. Here is the format of the where.js file:
+
 
 myData = [
-[42.3396998,-71.08975, 'Northeastern University, 360 Huntington Avenue, Boston, MA 02115, USA'],
-[40.6963857,-89.6160811, 'Bradley University, 1501 West Bradley Avenue, Peoria, IL 61625, USA'],
-[32.7775,35.0216667, 'Technion, Viazman 87, Kesalsaba, 32000, Israel'],
+[50.065703299999996,19.918958667058632, 'AGH University of Science and Technology, Czarnowiejs
+ka, Czarna Wieś, Krowodrza, Kraków, Lesser Poland Voivodeship, 31-126, Poland '],
+[52.2397515,21.015564130658333, 'Academy of Fine Arts, Krakowskie Przedmieście
+e, Śródmieście Północne, Śródmieście, Warsaw, Masovian Voivodeship, 00-046,
+Poland'],
    ...
 ];
 
-This is a JavaScript list of lists.  The syntax for JavaScript
-list constants is very similar to Python so the syntax should
-be familiar to you.
 
-Simply open where.html in a browser to see the locations.  You
-can hover over each map pin to find the location that the
-geocoding API returned for the user-entered input.  If you
-cannot see any data when you open the where.html file, you might
-want to check the JavaScript or developer console for your browser.
+
+This is a list of lists written in JavaScript. Language list syntax
+JavaScript is very similar to Python syntax.
+
+To see the locations on the map, open the where.html file in your browser
+website. You can hover over each map pin and click on it,
+so as to find the location that the encoding API returned for the input
+entered by the user. If you don't see the where.html file when you open it
+no data, check if JavaScript is enabled in the browser or in
+your browser's development console, check if there are any errors.
+
 

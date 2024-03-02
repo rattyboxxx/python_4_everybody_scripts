@@ -1,6 +1,6 @@
-To export your own Library.xml from iTunes 
 
-File -> Library -> Export Library
+As of February 2024 this assignment is done using a CSV file
 
-Make sure it is in the correct folder.   Of course iTUnes might change
-UI and/or export format any time - so good luck :)
+The tracks.py program reads the tracks.csv file and inserts
+the data into an SQLite database with many-to-one relationships.
+

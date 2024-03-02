@@ -1,8 +1,6 @@
 import json
 import sqlite3
 
-print("Processing, please wait...")
-
 conn = sqlite3.connect('rosterdb.sqlite')
 cur = conn.cursor()
 

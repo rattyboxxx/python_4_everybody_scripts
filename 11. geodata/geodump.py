@@ -22,7 +22,8 @@ for row in cur :
         where = js['features'][0]['properties']['display_name']
         where = where.replace("'", "")
     except:
-        print('-> Unexpected format. First 20 characters:', str(js)[:20])
+        print('Unexpected format')
+        print(js)
 
     try :
         print(where, lat, lng)
@@ -39,5 +40,3 @@ cur.close()
 fhand.close()
 print(count, "records written to where.js")
 print("Open where.html to view the data in a browser")
-
-input()

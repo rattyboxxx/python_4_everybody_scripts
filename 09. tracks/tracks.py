@@ -1,4 +1,3 @@
-import xml.etree.ElementTree as ET
 import sqlite3
 
 conn = sqlite3.connect('trackdb.sqlite')
@@ -37,37 +36,37 @@ CREATE TABLE Track (
 );
 ''')
 
+handle = open('tracks.csv')
 
-fname = input('Enter file name: ')
-if ( len(fname) < 1 ) : fname = 'Library.xml'
+# Another One Bites The Dust,Queen,Greatest Hits,55,100,217103,Rock
+#   0                          1      2           3  4   5      6
 
-# <key>Track ID</key><integer>369</integer>
-# <key>Name</key><string>Another One Bites The Dust</string>
-# <key>Artist</key><string>Queen</string>
-def lookup(d, key):
-    found = False
-    for child in d:
-        if found : return child.text
-        if child.tag == 'key' and child.text == key :
-            found = True
-    return None
+fmt = "| {:34} | {:11} | {:11} | {:5} | {:6} | {:7} | {:9} |"
 
-stuff = ET.parse(fname)
-all = stuff.findall('dict/dict/dict')
-print('Dict count:', len(all))
-for entry in all:
-    if ( lookup(entry, 'Track ID') is None ) : continue
+print("+------------------------------------+-------------+-------------+-------+--------+---------+-----------+")
+print(fmt.format("NAME", "ARTIST", "ALBUM", "COUNT", "RATING", "LENGTH", "GENRE"))
+print("+------------------------------------+-------------+-------------+-------+--------+---------+-----------+")
 
-    name = lookup(entry, 'Name')
-    artist = lookup(entry, 'Artist')
-    genre = lookup(entry, 'Genre')
-    album = lookup(entry, 'Album')
-    count = lookup(entry, 'Play Count')
-    rating = lookup(entry, 'Rating')
-    length = lookup(entry, 'Total Time')
+def fmtt(s: str, n: int):
+    if len(s) <= n:
+        return s
+    return s[:n-3] + "..."
 
-    if name is None or artist is None or album is None or genre is None:
-        continue
+
+for line in handle:
+    line = line.strip();
+    pieces = line.split(',')
+    if len(pieces) < 6 : continue
+
+    name = pieces[0]
+    artist = pieces[1]
+    album = pieces[2]
+    count = pieces[3]
+    rating = pieces[4]
+    length = pieces[5]
+    genre = pieces[6]
+
+    print(fmt.format(fmtt(name, 34), fmtt(artist, 11), fmtt(album, 11), count, rating, length, fmtt(genre, 9)))
 
     cur.execute('''INSERT OR IGNORE INTO Artist (name)
         VALUES ( ? )''', ( artist, ) )
@@ -90,3 +89,5 @@ for entry in all:
         ( name, album_id, genre_id, length, rating, count ) )
 
     conn.commit()
+
+print("+------------------------------------+-------------+-------------+-------+--------+---------+-----------+")

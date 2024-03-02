@@ -4,8 +4,10 @@ import sqlite3
 import json
 import time
 import ssl
+import sys
 import random
 
+# https://py4e-data.dr-chuck.net/opengeo?q=Ann+Arbor%2C+MI
 serviceurl = 'https://py4e-data.dr-chuck.net/opengeo?'
 
 # Additional detail for urllib
@@ -31,34 +33,38 @@ with open('backup.data', 'r') as first, open('where.data', 'w') as second:
         second.write(line)
 
 # Randomly append a new university into current list
-sf = open("random.data", 'r')
-fh = open("where.data", 'a')
-
-n = sum([1 for line in sf])
-seed = random.randint(0, n-1)
-sf.close()
-sf = open("random.data", 'r')
-for idx, line in enumerate(sf):
-    if seed == idx:
-        print('Automatic choose:\033[92m', line.rstrip(), '\033[00m')
-        fh.write(line)
-        break
-sf.close()
-fh.close()
-time.sleep(3)
+def random_line(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        if lines:
+            return random.choice(lines)
+        else:
+            return None
+rd = random_line("random.data")
+if rd:
+    print(f"Automatically choose: \033[92m{rd}\033[00m")
+    with open("where.data", "a") as file:
+        file.write(rd)
+    time.sleep(3)
+else:
+    print("Not found random.data. Exit the program...")
+    exit()
 
 fh = open("where.data")
-# count = 0
 nofound = 0
+count = False
 for line in fh:
     address = line.strip()
-    print('')
+    if count:
+        print('')
+    else:
+        count = True
     cur.execute("SELECT geodata FROM Locations WHERE address= ?",
         (memoryview(address.encode()), ))
 
     try:
         data = cur.fetchone()[0]
-        print("Found in database", address)
+        print("Found in database ",address)
         continue
     except:
         pass
@@ -71,8 +77,7 @@ for line in fh:
     print('Retrieving', url)
     uh = urllib.request.urlopen(url, context=ctx)
     data = uh.read().decode()
-    print("Retrieved {}, characters. The first 20 chars: '{}'".format(len(data), data[0:20].replace('\n', ' ')))
-    # count = count + 1
+    print('Retrieved', len(data), 'characters', data[:20].replace('\n', ' '))
 
     try:
         js = json.loads(data)
@@ -90,14 +95,15 @@ for line in fh:
         nofound = nofound + 1
 
     cur.execute('''INSERT INTO Locations (address, geodata)
-                VALUES ( ?, ? )''', (memoryview(address.encode()), memoryview(data.encode()) ) )
+        VALUES ( ?, ? )''',
+        (memoryview(address.encode()), memoryview(data.encode()) ) )
+
     conn.commit()
-    
-fh.close()
 
 if nofound > 0:
     print('Number of features for which the location could not be found:', nofound)
 
 print("Run geodump.py to read the data from the database so you can vizualize it on a map.")
-
+    
+fh.close()
 input()

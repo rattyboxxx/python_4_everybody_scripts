@@ -1,5 +1,13 @@
+# folder
 image
 00. hello
-roster_data.json
-Answer.txt
+__pycache__
+
+# files
+*.json
+*.txt
 *.sqlite
+*.bat
+*.png
+*.jpg
+*.jpeg
